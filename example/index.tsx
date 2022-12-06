@@ -162,6 +162,7 @@ const OnHeightChangeCallback = () => {
         maxHeight={60}
         onChange={(v) => {
           setValue(v);
+            console.log(v);
         }}
         value={'testemkdm\nede\nd'}
       />
