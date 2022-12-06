@@ -2,40 +2,73 @@ export const getFormattedText = (oTextarea) => {
   oTextarea.style.padding = '0px';
   oTextarea.style.border = 'none';
   if (oTextarea.wrap) {
-    oTextarea.setAttribute('wrap', 'off');
-  } else {
-    oTextarea.setAttribute('wrap', 'off');
-    const newArea = oTextarea.cloneNode(true);
-    newArea.value = oTextarea.value;
-    //oTextarea.parentNode.replaceChild(newArea, oTextarea);
-    //  oTextarea = newArea;
+    oTextarea.setAttribute("wrap", "off");
+  }
+  else {
+    oTextarea.setAttribute("wrap", "off");
+    var newArea = oTextarea.cloneNode(true);
+   // newArea.value = oTextarea.value;
+   // oTextarea.parentNode.replaceChild(newArea, oTextarea);
+   // oTextarea = newArea;
   }
 
-  const strRawValue = oTextarea.value;
-  oTextarea.value = '';
-  const nEmptyWidth = oTextarea.scrollWidth;
-  let nLastWrappingIndex = -1;
-  for (let i = 0; i < strRawValue.length; i++) {
-    const curChar = strRawValue.charAt(i);
-    if (curChar == ' ' || curChar == '-' || curChar == '+')
-      nLastWrappingIndex = i;
-    oTextarea.value += curChar;
-    if (oTextarea.scrollWidth > nEmptyWidth) {
-      let buffer = '';
-      if (nLastWrappingIndex >= 0) {
-        for (let j = nLastWrappingIndex + 1; j < i; j++)
-          buffer += strRawValue.charAt(j);
-        nLastWrappingIndex = -1;
-      }
-      buffer += curChar;
-      oTextarea.value = oTextarea.value.substr(
-        0,
-        oTextarea.value.length - buffer.length,
-      );
-      oTextarea.value += '\n' + buffer;
-    }
+  var strRawValue = oTextarea.value;
+ // oTextarea.value = "";
+  var nEmptyWidth = oTextarea.scrollWidth;
+
+  function testBreak(strTest) {
+    oTextarea.value = strTest;
+    return oTextarea.scrollWidth > nEmptyWidth;
   }
-  oTextarea.removeAttribute('wrap');
+  function findNextBreakLength(strSource, nLeft, nRight) {
+    var nCurrent;
+    if(typeof(nLeft) == 'undefined') {
+      nLeft = 0;
+      nRight = -1;
+      nCurrent = 64;
+    }
+    else {
+      if (nRight == -1)
+        nCurrent = nLeft * 2;
+      else if (nRight - nLeft <= 1)
+        return Math.max(2, nRight);
+      else
+        nCurrent = nLeft + (nRight - nLeft) / 2;
+    }
+    var strTest = strSource.substr(0, nCurrent);
+    var bLonger = testBreak(strTest);
+    if(bLonger)
+      nRight = nCurrent;
+    else
+    {
+      if(nCurrent >= strSource.length)
+        return null;
+      nLeft = nCurrent;
+    }
+    return findNextBreakLength(strSource, nLeft, nRight);
+  }
+
+  var i = 0, j;
+  var strNewValue = "";
+  while (i < strRawValue.length) {
+    var breakOffset = findNextBreakLength(strRawValue.substr(i));
+    if (breakOffset === null) {
+      strNewValue += strRawValue.substr(i);
+      break;
+    }
+    var nLineLength = breakOffset - 1;
+    for (j = nLineLength - 1; j >= 0; j--) {
+      var curChar = strRawValue.charAt(i + j);
+      if (curChar == ' ' || curChar == '-' || curChar == '+') {
+        nLineLength = j + 1;
+        break;
+      }
+    }
+    strNewValue += strRawValue.substr(i, nLineLength) + "\n";
+    i += nLineLength;
+  }
+  //oTextarea.value = strNewValue;
+  oTextarea.setAttribute("wrap", "");
 
   return oTextarea.value;
 };

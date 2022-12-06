@@ -5,6 +5,7 @@ import { useComposedRef, useWindowResizeListener } from './hooks';
 import { noop } from './utils';
 import { getFormattedText } from './getFormattedText';
 import { ClipboardEventHandler, useEffect } from 'react';
+import { getCursorPos } from './cursorPosition';
 
 type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 
@@ -44,6 +45,7 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
     onHeightChange = noop,
     maxHeight,
     value,
+    style,
     ...props
   },
   userRef: React.Ref<HTMLTextAreaElement>,
@@ -94,6 +96,9 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const inp = libRef.current!;
+    const pos = getCursorPos(inp);
+
     if (!isControlled) {
       resizeTextarea();
     }
@@ -101,7 +106,12 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
     const str = getFormattedText(libRef.current);
     libRef.current!.value = str;
 
-    const inp = libRef.current!;
+    if (
+      inp.value[inp.value.length - 1] === ' ' &&
+      inp.value[inp.value.length - 2] === '\n'
+    ) {
+      inp.value = inp.value.slice(0, -2);
+    }
 
     while (
       (maxHeight !== undefined && heightRef.current > maxHeight) ||
@@ -110,6 +120,8 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
       inp.value = inp.value.slice(0, -1);
       resizeTextarea();
     }
+
+    inp.selectionEnd = pos.end;
 
     onChange(inp.value);
   };
@@ -136,7 +148,13 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
   }
 
   return (
-    <textarea {...props} ref={ref} onInput={handleChange} onPaste={onPaste} />
+    <textarea
+      {...props}
+      ref={ref}
+      style={{ ...style, whiteSpace: 'pre-wrap' }}
+      onInput={handleChange}
+      onPaste={onPaste}
+    />
   );
 };
 
