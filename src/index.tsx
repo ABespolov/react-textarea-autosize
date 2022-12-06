@@ -3,6 +3,8 @@ import calculateNodeHeight from './calculateNodeHeight';
 import getSizingData, { SizingData } from './getSizingData';
 import { useComposedRef, useWindowResizeListener } from './hooks';
 import { noop } from './utils';
+import { getFormattedText } from './getFormattedText';
+import { ClipboardEventHandler, useEffect } from 'react';
 
 type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 
@@ -16,13 +18,19 @@ type Style = Omit<
 export type TextareaHeightChangeMeta = {
   rowHeight: number;
 };
-export interface TextareaAutosizeProps extends Omit<TextareaProps, 'style'> {
+export interface TextareaAutosizeProps
+  extends Omit<TextareaProps, 'style' | 'onChange'> {
   maxRows?: number;
   minRows?: number;
   onHeightChange?: (height: number, meta: TextareaHeightChangeMeta) => void;
   cacheMeasurements?: boolean;
   style?: Style;
+  maxHeight?: number;
+  onChange: (v: string) => void;
 }
+
+const availableSymbols =
+  /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?\n\s\t]*$/;
 
 const TextareaAutosize: React.ForwardRefRenderFunction<
   HTMLTextAreaElement,
@@ -32,8 +40,10 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
     cacheMeasurements,
     maxRows,
     minRows,
-    onChange = noop,
+    onChange,
     onHeightChange = noop,
+    maxHeight,
+    value,
     ...props
   },
   userRef: React.Ref<HTMLTextAreaElement>,
@@ -87,15 +97,47 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
     if (!isControlled) {
       resizeTextarea();
     }
-    onChange(event);
+
+    const str = getFormattedText(libRef.current);
+    libRef.current!.value = str;
+
+    const inp = libRef.current!;
+
+    while (
+      (maxHeight !== undefined && heightRef.current > maxHeight) ||
+      !availableSymbols.test(inp.value)
+    ) {
+      inp.value = inp.value.slice(0, -1);
+      resizeTextarea();
+    }
+
+    onChange(inp.value);
   };
+
+  const onPaste = (e: any) => {
+    if (libRef.current && !availableSymbols.test(libRef.current.value)) {
+      e.preventDefault();
+    }
+  };
+
+  useEffect(() => {
+    const inp = libRef.current;
+
+    if (value && inp) {
+      inp.value = String(value);
+    }
+
+    resizeTextarea();
+  }, []);
 
   if (typeof document !== 'undefined') {
     React.useLayoutEffect(resizeTextarea);
     useWindowResizeListener(resizeTextarea);
   }
 
-  return <textarea {...props} onChange={handleChange} ref={ref} />;
+  return (
+    <textarea {...props} ref={ref} onInput={handleChange} onPaste={onPaste} />
+  );
 };
 
 export default /* #__PURE__ */ React.forwardRef(TextareaAutosize);

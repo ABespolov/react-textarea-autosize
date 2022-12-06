@@ -1,6 +1,8 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import TextareaAutosize from '../src';
+import { useRef, useState } from 'react';
+import { getFormattedText } from '../src/getFormattedText';
 
 const range = (n: number): number[] => Array.from({ length: n }, (_, i) => i);
 
@@ -117,7 +119,7 @@ const ControlledMode = () => {
       <TextareaAutosize
         cacheMeasurements
         value={value}
-        onChange={ev => setValue(ev.target.value)}
+        onChange={(ev) => setValue(ev.target.value)}
       />
       <button onClick={() => setValue('This value was set programatically')}>
         {'Change value programatically'}
@@ -143,6 +145,8 @@ const UncontrolledMode = () => {
 };
 
 const OnHeightChangeCallback = () => {
+  const [value, setValue] = useState('');
+
   return (
     <div>
       <h2>{'Receive message on height change.'}</h2>
@@ -155,11 +159,11 @@ const OnHeightChangeCallback = () => {
 `}
       </pre>
       <TextareaAutosize
-        cacheMeasurements
-        onHeightChange={height => {
-          // eslint-disable-next-line no-console
-          console.log(height);
+        maxHeight={60}
+        onChange={(v) => {
+          setValue(v);
         }}
+        value={'testemkdm\nede\nd'}
       />
     </div>
   );
@@ -171,12 +175,9 @@ const MultipleTextareas = () => {
     <div>
       <h2>{'Multiple textareas updated at the same time.'}</h2>
       <div>{'This one controls the rest.'}</div>
-      <TextareaAutosize
-        value={value}
-        onChange={ev => setValue(ev.target.value)}
-      />
+      <TextareaAutosize value={value} onChange={(ev) => setValue(ev)} />
       <div>{'Those get controlled by the one above.'}</div>
-      {range(15).map(i => (
+      {range(15).map((i) => (
         <TextareaAutosize key={i} value={value} />
       ))}
     </div>
