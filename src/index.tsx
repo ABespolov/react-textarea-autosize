@@ -111,6 +111,7 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
       inp.value[inp.value.length - 2] === '\n'
     ) {
       inp.value = inp.value.slice(0, -2);
+    } else {
     }
 
     while (
@@ -121,7 +122,10 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
       resizeTextarea();
     }
 
-    inp.selectionEnd = pos.end;
+    console.log(inp.value[inp.value.length - 2]);
+    if (inp.value[inp.value.length - 2] !== '\n') {
+      inp.selectionEnd = pos.end;
+    }
 
     onChange(inp.value);
   };
@@ -162,21 +166,14 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
     useWindowResizeListener(resizeTextarea);
   }
 
-  const handleFocus = (e: any) => {
-    e.stopPropagation();
-    libRef.current?.focus({ preventScroll: true });
-  };
-
   return (
-    <div onClick={handleFocus}>
-      <textarea
-        {...props}
-        ref={ref}
-        style={{ ...style, whiteSpace: 'pre-wrap', pointerEvents: 'none' }}
-        onInput={handleChange}
-        onPaste={onPaste}
-      />
-    </div>
+    <textarea
+      {...props}
+      ref={ref}
+      style={{ ...style, whiteSpace: 'pre-wrap' }}
+      onInput={handleChange}
+      onPaste={onPaste}
+    />
   );
 };
 
