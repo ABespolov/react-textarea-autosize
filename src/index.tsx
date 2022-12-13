@@ -95,7 +95,7 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
     }
   };
 
-  const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleChange = () => {
     const inp = libRef.current!;
     const pos = getCursorPos(inp);
 
@@ -140,6 +140,21 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
     }
 
     resizeTextarea();
+
+    const observer = new MutationObserver(function (mutations) {
+      mutations.forEach(function (mutation) {
+        if (mutation.attributeName === 'style') {
+          handleChange();
+        }
+      });
+    });
+
+    const observerConfig = {
+      attributes: true,
+      attributeFilter: ['style'],
+    };
+
+    observer.observe(inp as any, observerConfig);
   }, []);
 
   if (typeof document !== 'undefined') {
@@ -147,14 +162,21 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
     useWindowResizeListener(resizeTextarea);
   }
 
+  const handleFocus = (e: any) => {
+    e.stopPropagation();
+    libRef.current?.focus({ preventScroll: true });
+  };
+
   return (
-    <textarea
-      {...props}
-      ref={ref}
-      style={{ ...style, whiteSpace: 'pre-wrap' }}
-      onInput={handleChange}
-      onPaste={onPaste}
-    />
+    <div onClick={handleFocus}>
+      <textarea
+        {...props}
+        ref={ref}
+        style={{ ...style, whiteSpace: 'pre-wrap', pointerEvents: 'none' }}
+        onInput={handleChange}
+        onPaste={onPaste}
+      />
+    </div>
   );
 };
 
