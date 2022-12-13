@@ -164,7 +164,7 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
 
   const handleFocus = (e: any) => {
     e.stopPropagation();
-    libRef.current?.focus({ preventScroll: true });
+   // libRef.current?.focus({ preventScroll: true });
   };
 
   return (
