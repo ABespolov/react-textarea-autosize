@@ -95,7 +95,7 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
     }
   };
 
-  const handleChange = () => {
+  const handleChange = (updateStyle?: boolean) => {
     const inp = libRef.current!;
     const pos = getCursorPos(inp);
 
@@ -122,8 +122,7 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
       resizeTextarea();
     }
 
-    console.log(inp.value[inp.value.length - 2]);
-    if (inp.value[inp.value.length - 2] !== '\n') {
+    if (inp.value[inp.value.length - 2] !== '\n' && !updateStyle) {
       inp.selectionEnd = pos.end;
     }
 
@@ -148,7 +147,7 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
     const observer = new MutationObserver(function (mutations) {
       mutations.forEach(function (mutation) {
         if (mutation.attributeName === 'style') {
-          handleChange();
+          handleChange(true);
         }
       });
     });
