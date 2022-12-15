@@ -6,6 +6,7 @@ import { noop } from './utils';
 import { getFormattedText } from './getFormattedText';
 import { ClipboardEventHandler, useEffect } from 'react';
 import { getCursorPos } from './cursorPosition';
+const getCaretCoordinates = require('textarea-caret');
 
 type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 
@@ -97,21 +98,17 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
 
   const handleChange = (updateStyle?: boolean) => {
     const inp = libRef.current!;
-    const pos = getCursorPos(inp);
+    const pos = inp.selectionEnd;
 
     if (!isControlled) {
       resizeTextarea();
     }
-
-    const str = getFormattedText(libRef.current);
-    libRef.current!.value = str;
 
     if (
       inp.value[inp.value.length - 1] === ' ' &&
       inp.value[inp.value.length - 2] === '\n'
     ) {
       inp.value = inp.value.slice(0, -2);
-    } else {
     }
 
     while (
@@ -121,9 +118,12 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
       inp.value = inp.value.slice(0, -1);
       resizeTextarea();
     }
+    const str = getFormattedText(libRef.current);
+    libRef.current!.value = str;
 
-    if (inp.value[inp.value.length - 2] !== '\n' && !updateStyle) {
-      inp.selectionEnd = pos.end;
+
+    if (Math.abs(inp.value.length - pos) > 1) {
+      inp.selectionEnd = pos;
     }
 
     onChange(inp.value);
