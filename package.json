@@ -60,6 +60,7 @@
     "@babel/runtime": "^7.10.2",
     "textarea-caret": "^3.1.0",
     "use-composed-ref": "^1.3.0",
+    "use-debounce": "^9.0.2",
     "use-latest": "^1.2.1"
   },
   "devDependencies": {
