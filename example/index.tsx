@@ -146,6 +146,7 @@ const UncontrolledMode = () => {
 
 const OnHeightChangeCallback = () => {
   const [value, setValue] = useState('');
+    const [a, b] = useState(20);
 
   return (
     <div>
@@ -160,12 +161,16 @@ const OnHeightChangeCallback = () => {
       </pre>
       <TextareaAutosize
         maxHeight={60}
+        style={{ fontSize: a }}
         onChange={(v) => {
           setValue(v);
             console.log(v);
         }}
         value={'testemkdm\nede\nd'}
       />
+        <button onClick={() => {
+            b(25)
+        }}>ssss</button>
     </div>
   );
 };

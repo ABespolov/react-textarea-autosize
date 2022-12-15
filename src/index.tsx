@@ -47,7 +47,6 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
     onHeightChange = noop,
     maxHeight,
     value,
-    style,
     ...props
   },
   userRef: React.Ref<HTMLTextAreaElement>,
@@ -97,7 +96,7 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
     }
   };
 
-  const debounced = useDebouncedCallback(() => {
+  const format = useDebouncedCallback(() => {
     const inp = libRef.current!;
     const pos = inp.selectionEnd;
 
@@ -109,7 +108,7 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
     }
 
     onChange(inp.value);
-  }, 200);
+  }, 100);
 
   const handleChange = (updateStyle?: boolean) => {
     const inp = libRef.current!;
@@ -129,7 +128,7 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
       inp.value = inp.value.slice(0, -1);
       resizeTextarea();
     }
-    debounced();
+    //debounced();
 
     if (Math.abs(inp.value.length - pos) > 1) {
       inp.selectionEnd = pos;
@@ -169,6 +168,10 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
     observer.observe(inp as any, observerConfig);
   }, []);
 
+  useEffect(() => {
+    format();
+  }, [props.style?.fontSize, props.style?.fontFamily]);
+
   if (typeof document !== 'undefined') {
     React.useLayoutEffect(resizeTextarea);
     useWindowResizeListener(resizeTextarea);
@@ -178,9 +181,13 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
     <textarea
       {...props}
       ref={ref}
-      style={{ ...style, whiteSpace: 'pre-wrap' }}
+      style={{ ...props.style, whiteSpace: 'pre-wrap' }}
       onInput={handleChange}
       onPaste={onPaste}
+      onBlur={(e) => {
+        format();
+        props.onBlur?.(e);
+      }}
     />
   );
 };
