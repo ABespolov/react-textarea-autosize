@@ -4,7 +4,7 @@ import getSizingData, { SizingData } from './getSizingData';
 import { useComposedRef, useWindowResizeListener } from './hooks';
 import { noop } from './utils';
 import { getFormattedText } from './getFormattedText';
-import { ClipboardEventHandler, useEffect } from 'react';
+import { ClipboardEventHandler, useCallback, useEffect } from 'react';
 
 type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 
@@ -93,19 +93,19 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
     }
   };
 
-  const format = () => {
+  const format = useCallback((blur?: boolean) => {
     const inp = libRef.current!;
     const pos = inp.selectionEnd;
 
     const str = getFormattedText(libRef.current);
     libRef.current!.value = str;
 
-    if (Math.abs(inp.value.length - pos) > 1) {
+    if (Math.abs(inp.value.length - pos) > 1 && !blur) {
       inp.selectionEnd = pos;
     }
 
     onChange?.(inp.value);
-  };
+  }, []);
 
   const handleChange = (updateStyle?: boolean) => {
     const inp = libRef.current!;
@@ -148,6 +148,12 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
     }
 
     resizeTextarea();
+
+    const f = format.bind(true) as any;
+
+    libRef.current?.addEventListener('blur', f);
+
+    return () => libRef.current?.removeEventListener('blur', f);
   }, []);
 
   useEffect(() => {
@@ -167,10 +173,6 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
       style={{ ...props.style, whiteSpace: 'pre-wrap' }}
       onInput={handleChange}
       onPaste={onPaste}
-      onBlur={(e) => {
-        format();
-        props.onBlur?.(e);
-      }}
     />
   );
 };
