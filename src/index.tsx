@@ -5,9 +5,6 @@ import { useComposedRef, useWindowResizeListener } from './hooks';
 import { noop } from './utils';
 import { getFormattedText } from './getFormattedText';
 import { ClipboardEventHandler, useEffect } from 'react';
-import { getCursorPos } from './cursorPosition';
-import { useDebouncedCallback } from 'use-debounce';
-const getCaretCoordinates = require('textarea-caret');
 
 type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 
@@ -29,11 +26,11 @@ export interface TextareaAutosizeProps
   cacheMeasurements?: boolean;
   style?: Style;
   maxHeight?: number;
-  onChange: (v: string) => void;
+  onChange?: (v: string) => void;
 }
 
 const availableSymbols =
-  /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?\n\s\t]*$/;
+  /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};'’:"\\|,.<>\/?\n\s\t]*$/;
 
 const TextareaAutosize: React.ForwardRefRenderFunction<
   HTMLTextAreaElement,
@@ -96,7 +93,7 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
     }
   };
 
-  const format = useDebouncedCallback(() => {
+  const format = () => {
     const inp = libRef.current!;
     const pos = inp.selectionEnd;
 
@@ -107,8 +104,8 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
       inp.selectionEnd = pos;
     }
 
-    onChange(inp.value);
-  }, 100);
+    onChange?.(inp.value);
+  };
 
   const handleChange = (updateStyle?: boolean) => {
     const inp = libRef.current!;
@@ -134,7 +131,7 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
       inp.selectionEnd = pos;
     }
 
-    onChange(inp.value);
+    onChange?.(inp.value);
   };
 
   const onPaste = (e: any) => {
@@ -151,24 +148,10 @@ const TextareaAutosize: React.ForwardRefRenderFunction<
     }
 
     resizeTextarea();
-
-    const observer = new MutationObserver(function (mutations) {
-      mutations.forEach(function (mutation) {
-        if (mutation.attributeName === 'style') {
-          handleChange(true);
-        }
-      });
-    });
-
-    const observerConfig = {
-      attributes: true,
-      attributeFilter: ['style'],
-    };
-
-    observer.observe(inp as any, observerConfig);
   }, []);
 
   useEffect(() => {
+    handleChange();
     format();
   }, [props.style?.fontSize, props.style?.fontFamily]);
 

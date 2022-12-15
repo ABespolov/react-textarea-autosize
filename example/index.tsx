@@ -119,7 +119,6 @@ const ControlledMode = () => {
       <TextareaAutosize
         cacheMeasurements
         value={value}
-        onChange={(ev) => setValue(ev.target.value)}
       />
       <button onClick={() => setValue('This value was set programatically')}>
         {'Change value programatically'}
@@ -193,15 +192,9 @@ const MultipleTextareas = () => {
 const Demo = () => {
   return (
     <div>
-      <Basic />
-      <MinMaxRows />
-      <MinMaxRowsBorderBox />
-      <MaxRows />
-      <SetRows />
-      <ControlledMode />
-      <UncontrolledMode />
+
       <OnHeightChangeCallback />
-      <MultipleTextareas />
+
     </div>
   );
 };
